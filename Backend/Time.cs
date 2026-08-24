@@ -10,27 +10,31 @@ public class Time
 
     //Constructors
     public Time() { }
+
     public Time(int hour)
     {
-        _hour = hour;
+        Hour = hour;
     }
+
     public Time(int hour, int minute)
     {
-        _hour = hour;
-        _minute = minute;
+        Hour = hour;
+        Minute = minute;
     }
+
     public Time(int hour, int minute, int second)
     {
-        _hour = hour;
-        _minute = minute;
-        _second = second;
+        Hour = hour;
+        Minute = minute;
+        Second = second;
     }
+
     public Time(int hour, int minute, int second, int millisecond)
     {
-        _hour = hour;
-        _minute = minute;
-        _second = second;
-        _millisecond = millisecond;
+        Hour = hour;
+        Minute = minute;
+        Second = second;
+        Millisecond = millisecond;
     }
 
     //Properties
@@ -78,10 +82,67 @@ public class Time
         }
     }
     //Methods
+    public long ToMilliseconds()
+    {
+        return (long)_hour * 3_600_000 + _minute * 60_000 + _second * 1_000 + _millisecond;
+    }
+
+    public long ToSeconds()
+    {
+        return ToMilliseconds() / 1000;
+    }
+
+    public long ToMinutes()
+    {
+        return ToMilliseconds() / 60_000;
+    }
+
+    public Time Add(Time other)
+    {
+        int ms = _millisecond + other.Millisecond;
+        int carryToSec = ms / 1000;
+        ms %= 1000;
+
+        int sec = _second + other.Second + carryToSec;
+        int carryToMin = sec / 60;
+        sec %= 60;
+
+        int min = _minute + other.Minute + carryToMin;
+        int carryToHour = min / 60;
+        min %= 60;
+
+        int hour = (_hour + other.Hour + carryToHour) % 24;
+
+        return new Time(hour, min, sec, ms);
+    }
+
+    public bool IsOtherDay(Time other)
+    {
+        int ms = _millisecond + other.Millisecond;
+        int carryToSec = ms / 1000;
+
+        int sec = _second + other.Second + carryToSec;
+        int carryToMin = sec / 60;
+
+        int min = _minute + other.Minute + carryToMin;
+        int carryToHour = min / 60;
+
+        int hour = _hour + other.Hour + carryToHour;
+
+        return hour >= 24;
+    }
+
+    public override string ToString()
+    {
+        string period = _hour < 12 ? "AM" : "PM";
+        int hour12 = _hour % 12;
+
+        return $"{hour12:00}:{_minute:00}:{_second:00}.{_millisecond:000} {period}";
+    }
 
     //Private validations
     private bool ValidHour(int hour) => hour >= 0 && hour <= 23;
     private bool ValidMinute(int minute) => minute >= 0 && minute <= 59;
-    private bool ValidSecond(int second) => second >= 0 && second <= 29;
+    private bool ValidSecond(int second) => second >= 0 && second <= 59;
     private bool ValidMillisecond(int millisecond) => millisecond >= 0 && millisecond <= 999;
 }
